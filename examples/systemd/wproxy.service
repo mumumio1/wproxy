@@ -1,0 +1,31 @@
+[Unit]
+Description=wproxy - HTTP Reverse Proxy
+After=network.target
+
+[Service]
+Type=simple
+User=proxy
+Group=proxy
+WorkingDirectory=/opt/wproxy
+ExecStart=/opt/wproxy/proxy -config /etc/wproxy/config.yaml
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log/wproxy
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=512
+
+# Environment
+Environment="PROXY_LOG_LEVEL=info"
+
+[Install]
+WantedBy=multi-user.target
+

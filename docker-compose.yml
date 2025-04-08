@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Upstream test service
+  upstream:
+    build:
+      context: ./test/testserver
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    networks:
+      - proxy-net
+
+  # Proxy service
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    environment:
+      - PROXY_UPSTREAM_URL=http://upstream:9000
+      - PROXY_LOG_LEVEL=info
+      - PROXY_CACHE_ENABLED=true
+      - PROXY_RATELIMIT_ENABLED=true
+    depends_on:
+      - upstream
+    networks:
+      - proxy-net
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Optional: Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - proxy-net
+
+  # Optional: Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - proxy-net
+    depends_on:
+      - prometheus
+
+networks:
+  proxy-net:
+    driver: bridge
+

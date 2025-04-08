@@ -1,0 +1,38 @@
+# Build artifacts
+proxy
+*.test
+*.out
+coverage.txt
+coverage.html
+bench-*.txt
+
+# Dependencies
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+test/
+examples/
+
+# Config (except example)
+config.yaml
+config.json
+*.log
+logs/
+
